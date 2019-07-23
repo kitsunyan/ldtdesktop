@@ -69,7 +69,6 @@ OVERRIDE(font_set_pixel_size, _ZN5QFont12setPixelSizeEi,
 			font_set_pixel_size(font, fr->size > 0 ? fr->size : pixel_size);
 			font->setKerning(fr->kerning);
 			handled = true;
-			printf("kerning %d\n", fr->kerning);
 		}
 	} else if (font->family() == "Open Sans Semibold") {
 		struct font_replacement_t * fr = get_font_replacement_normal();
