@@ -18,6 +18,26 @@ extern "C" result local(args) { \
 	body \
 }
 
+static void update_ld_preload() {
+	static bool updated = false;
+	if (!updated) {
+		updated = true;
+		auto list = QString(getenv("LD_PRELOAD")).split(":");
+		for (int i = 0; i < list.size(); i++) {
+			if (list.at(i).endsWith("/" SONAME) || list.at(i) == SONAME) {
+				list.removeAt(i);
+				QByteArray lp = list.join(":").toLatin1();
+				if (lp.isEmpty()) {
+					unsetenv("LD_PRELOAD");
+				} else {
+					setenv("LD_PRELOAD", lp.data(), 1);
+				}
+				break;
+			}
+		}
+	}
+}
+
 struct font_replacement_t {
 	bool ready = false;
 	bool enable = false;
@@ -60,6 +80,7 @@ static struct font_replacement_t * get_font_replacement_monospace() {
 
 OVERRIDE(font_set_pixel_size, _ZN5QFont12setPixelSizeEi,
 	void, ARGS(QFont * font, int pixel_size), {
+	update_ld_preload();
 	bool handled = false;
 	if (font->family() == "Open Sans") {
 		struct font_replacement_t * fr = get_font_replacement_normal();

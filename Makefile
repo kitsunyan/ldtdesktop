@@ -18,7 +18,7 @@ all: libldtdesktop.so
 
 libldtdesktop.so: ldtdesktop.cpp
 	$(CC) $< -o $@ \
-	$(CFLAGS) -I$(INCLUDE_QT5) -D_GNU_SOURCE \
+	$(CFLAGS) -I$(INCLUDE_QT5) -D_GNU_SOURCE -DSONAME=\"libldtdesktop.so\" \
 	$(LDFLAGS) -ldl -fPIC -shared
 
 clean:
