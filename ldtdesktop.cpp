@@ -78,41 +78,37 @@ static struct font_replacement_t * get_font_replacement_monospace() {
 	return fr.enable ? &fr : nullptr;
 }
 
+static bool apply_font(QFont *, int, const struct font_replacement_t *);
+
 OVERRIDE(font_set_pixel_size, _ZN5QFont12setPixelSizeEi,
 	void, ARGS(QFont * font, int pixel_size), {
 	update_ld_preload();
 	bool handled = false;
-	if (font->family() == "Open Sans") {
-		struct font_replacement_t * fr = get_font_replacement_normal();
-		if (fr) {
-			font->setFamily(fr->family);
-			font->setWeight(QFont::Normal);
-			font_set_pixel_size(font, fr->size > 0 ? fr->size : pixel_size);
-			font->setKerning(fr->kerning);
-			handled = true;
-		}
-	} else if (font->family() == "Open Sans Semibold") {
-		struct font_replacement_t * fr = get_font_replacement_normal();
-		if (fr) {
-			font->setFamily(fr->family);
-			font->setWeight(QFont::Bold);
-			font_set_pixel_size(font, fr->size > 0 ? fr->size : pixel_size);
-			font->setKerning(fr->kerning);
-			handled = true;
-		}
-	} else if (font->family() == "monospace" || font->family() == "Consolas" ||
-		font->family() == "Liberation Mono" || font->family() == "Menlo" ||
+	if (font->family() == "Open Sans" ||
+		font->family() == "Open Sans Semibold") {
+		handled = apply_font(font, pixel_size,
+			get_font_replacement_normal());
+	} else if (font->family() == "monospace" ||
+		font->family() == "Consolas" ||
+		font->family() == "Liberation Mono" ||
+		font->family() == "Menlo" ||
 		font->family() == "Courier") {
-		struct font_replacement_t * fr = get_font_replacement_monospace();
-		if (fr) {
-			font->setFamily(fr->family);
-			font->setWeight(QFont::Normal);
-			font_set_pixel_size(font, fr->size > 0 ? fr->size : pixel_size);
-			font->setKerning(fr->kerning);
-			handled = true;
-		}
+		handled = apply_font(font, pixel_size,
+			get_font_replacement_monospace());
 	}
 	if (!handled) {
 		font_set_pixel_size(font, pixel_size);
 	}
 })
+
+static bool apply_font(QFont * font, int pixel_size,
+	const struct font_replacement_t * fr) {
+	if (fr) {
+		font->setFamily(fr->family);
+		font_set_pixel_size(font, fr->size > 0 ? fr->size : pixel_size);
+		font->setKerning(fr->kerning);
+		return true;
+	} else {
+		return false;
+	}
+}
